@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/TaylorPzreal/ngx-cropper.git"
+    "url": "git+https://github.com/answer-is-42/ngx-cropper-2.git"
   },
   "keywords": [
     "angular2",
@@ -20,11 +20,16 @@
     "image"
   ],
   "author": "TaylorPzreal <taylorpzreal@gmail.com>",
+  "contributors": [{
+    "name": "Masurceac",
+    "email": "masurceac@labs42.io",
+    "url": "https://github.com/answer-is-42"
+  }],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/TaylorPzreal/ngx-cropper/issues"
+    "url": "https://github.com/answer-is-42/ngx-cropper-2/issues"
   },
-  "homepage": "https://github.com/TaylorPzreal/ngx-cropper#readme",
+  "homepage": "https://github.com/answer-is-42/ngx-cropper-2#readme",
   "dependencies": {
     "@types/cropperjs": "0.0.26",
     "cropperjs": "^1.0.0-rc.3"

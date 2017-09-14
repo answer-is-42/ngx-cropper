@@ -13,13 +13,13 @@ An Angular2 &amp; Angular4 image plugin, includes upload, cropper, save to serve
 ### 1. Install
 
 ```bash
-  npm i ngx-cropper
+  npm i ngx-cropper-2
 ```
 
 ### 2. Config __example.module.ts__
 
 ```typescript
-import { NgxCropperModule } from 'ngx-cropper';
+import { NgxCropperModule } from 'ngx-cropper-2';
 
 @NgModule({
   imports: [
