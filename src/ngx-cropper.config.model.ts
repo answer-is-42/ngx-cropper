@@ -9,5 +9,5 @@ export class Config {
   public applyBtnName: string;
   public applyBtnClass: string;
   public fdName: string;
-  public aspectRatio: number;
+  public closeBtnClass: string;
 }

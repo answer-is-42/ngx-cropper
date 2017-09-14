@@ -17,7 +17,7 @@ export class AppComponent {
     };
   }
 
-  public onReturnData(data: any) {
+  public uploadSuccess(data: any) {
     console.warn(JSON.parse(data));
   }
 }

@@ -13,7 +13,7 @@ An Angular2 &amp; Angular4 image plugin, includes upload, cropper, save to serve
 ### 1. Install
 
 ```bash
-  npm i -S ngx-cropper
+  npm i ngx-cropper
 ```
 
 ### 2. Config __example.module.ts__
@@ -31,7 +31,16 @@ import { NgxCropperModule } from 'ngx-cropper';
 ### 3. Config __example.component.html__
 
 ```html
-  <ngx-cropper [config]="ngxCropperConfig" (returnData)="onReturnData($event)"></ngx-cropper>
+  <ngx-cropper
+  [config]="ngxCropperConfig"
+  [cropperConfig]="cropperJsConfig"
+  [onSave]="onSaveCallback"
+  (onUploadSuccess)="onUpload($event)"
+  (onUploadError)="onError($event)"
+  (onSizeLimitExceed)="sizeLimitExceed($event)"
+  (onCropperClosed)="cropperClosed()"
+  (onCropperOpened)="cropperOpened()"
+  ></ngx-cropper>
 ```
 
 ### 4. Config __example.component.ts__
@@ -40,6 +49,9 @@ import { NgxCropperModule } from 'ngx-cropper';
 @component()
 export class ExampleComponent {
   public ngxCropperConfig: object;
+
+  // config 
+  public cropperJsConfig: object;
 
   constructor() {
     this.ngxCropperConfig = {
@@ -53,32 +65,54 @@ export class ExampleComponent {
       applyBtnName: 'Apply', // default Apply
       applyBtnClass: null, // default bootstrap styles, btn btn-primary
       fdName: 'file', // default 'file', this is  Content-Disposition: form-data; name="file"; filename="fire.jpg"
-      aspectRatio: 1 / 1// default 1 / 1, for example: 16 / 9, 4 / 3 ...
+      closeBtnClass: "btn-close"
     }
+    
+    // default settings
+    this.cropperJsConfig = { // see the full list at https://www.npmjs.com/package/cropperjs
+      autoCrop: true,
+      viewMode: 1,
+      dragMode: 'move',
+      guides: true,
+      movable: true,
+      cropBoxMovable: false,
+      cropBoxResizable: false
+    };
   }
 
   // deal callback data
-  public onReturnData(data: any) {
+  public onUpload(data: any) {
     // do you want to do
     console.warn(JSON.parse(data));
-    //  Here has three type of messages now
+    // data contains server response
+  }
+
+  public onError(error: any) {
+    // do you want to do
+    console.warn(JSON.parse(error));
+    // data contains server response
+  }
+
+  public sizeLimitExceed(data: any) {
+    // do you want to do
+    console.warn(JSON.parse(data));
     {
-        code: 4000,
-        data: null,
-        msg: `The size is max than ${this.viewConfig.maxsize}, now size is ${currentSize}k`
-     }
+      msg: `The size is max than ${this.viewConfig.maxsize}, now size is ${currentSize}k`
+    }
+  }
 
-     {
-          code: 4001,
-          data: null,
-          msg: 'ERROR: When sent to server, something wrong, please check the server url.'
-      }
+  public onCropperOpened() {
+    // do you want to do
+    console.warn('It`s opened');
+  }
 
-      {
-          code: 2000,
-          data,
-          mdg: 'The image was sent to server successly'
-      }
+  public onCropperClosed() {
+    // do you want to do
+    console.warn('It`s closed');
+  }
+  
+  onSaveCallback(file: any) { // if not set - the cropper will upload the file to specified url
+    // you can upload your file manyally here
   }
 }
 ```

@@ -1,3 +1,5 @@
+import { defaults } from './ngx-cropper.defaults';
+import { ICropperModel } from './ngx-cropper.interface';
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 
 import 'cropperjs/dist/cropper.min.css';
@@ -5,7 +7,7 @@ import './ngx-cropper.component.css';
 import * as Cropper from 'cropperjs';
 
 import { NgxCropperService } from './ngx-cropper.service';
-import { Config } from './ngx-cropper.model';
+import { Config } from './ngx-cropper.config.model';
 
 @Component({
   selector: 'ngx-cropper',
@@ -16,11 +18,12 @@ import { Config } from './ngx-cropper.model';
       onclick="document.getElementById('inputImage').click()">{{viewConfig.uploadBtnName}}</a>
       <input id="inputImage" type="file" class="hide" hidden>
     </section>
-    <section class="crop-container" *ngIf="isShow === true">
+    <div class="crop-background" *ngIf="isShow"></div>
+    <section class="crop-container" *ngIf="isShow">
       <div class="crop-box">
         <div class="crop-box-header">
           <h3>{{viewConfig.title}}</h3>
-          <button type="button" class="crop-box-close" (click)="onCancel()">
+          <button [ngClass]="viewConfig.closeBtnClass" type="button" class="crop-box-close" (click)="onCancel()">
             <span></span>
           </button>
         </div>
@@ -44,14 +47,20 @@ export class NgxCropperComponent implements OnInit {
   public isShow: boolean = false;
   public viewConfig: Config;
   @Input() private config: Config;
-  @Output() private returnData: EventEmitter<string> = new EventEmitter<string>();
+  @Input() private cropperConfig: ICropperModel;
+  @Input() private onSave: any; // a callBack for posting data
+  @Output() private onUploadSuccess: EventEmitter<string> = new EventEmitter<string>();
+  @Output() private onUploadError: EventEmitter<string> = new EventEmitter<string>();
+  @Output() private onSizeLimitExceed: EventEmitter<string> = new EventEmitter<string>();
+  @Output() private onCropperClosed: EventEmitter<void> = new EventEmitter<void>();
+  @Output() private onCropperOpened: EventEmitter<void> = new EventEmitter<void>();
 
   private fileName: string;
   private fileType: string;
   private dom: HTMLInputElement;
   private cropper: Cropper;
 
-  constructor(private ngxCropperService: NgxCropperService) {}
+  constructor(private ngxCropperService: NgxCropperService) { }
 
   public ngOnInit() {
     // init config
@@ -66,8 +75,10 @@ export class NgxCropperComponent implements OnInit {
       applyBtnName: this.config.applyBtnName || 'Apply',
       applyBtnClass: this.config.applyBtnClass || null,
       fdName: this.config.fdName || 'file',
-      aspectRatio: this.config.aspectRatio || 1 / 1
+      closeBtnClass: this.config.closeBtnClass || ''
     };
+
+    this.cropperConfig = this.applyDefaults(this.cropperConfig);
 
     //  init upload btn
     const dom = (this.dom = document.getElementById('inputImage') as HTMLInputElement);
@@ -76,7 +87,7 @@ export class NgxCropperComponent implements OnInit {
 
       if (files && files.length > 0) {
         this.isShow = true;
-
+        this.onCropperOpened.emit();
         setTimeout(() => {
           this.initCropper();
 
@@ -103,10 +114,8 @@ export class NgxCropperComponent implements OnInit {
     if (blob.size > this.viewConfig.maxsize) {
       const currentSize = Math.ceil(blob.size / 1024);
       // sent message max then size.
-      this.returnData.emit(
+      this.onSizeLimitExceed.emit(
         JSON.stringify({
-          code: 4000,
-          data: null,
           msg: `The size is max than ${this.viewConfig.maxsize}, now size is ${currentSize}k`
         })
       );
@@ -118,30 +127,28 @@ export class NgxCropperComponent implements OnInit {
     fd.append(name, blob, this.fileName);
 
     const url = this.viewConfig.url;
-    this.ngxCropperService.save(url, fd).subscribe(
-      (data: any) => {
-        // return success
-        this.returnData.emit(
-          JSON.stringify({
-            code: 2000,
-            data,
-            mdg: 'The image was sent to server successly'
-          })
-        );
-        // hidden modal
-        this.onCancel();
-      },
-      (error: any) => {
-        // return error
-        this.returnData.emit(
-          JSON.stringify({
-            code: 4001,
-            data: null,
-            msg: 'ERROR: When sent to server, something wrong, please check the server url.'
-          })
-        );
-      }
-    );
+    const callBack = this.onSave;
+    if (typeof callBack === 'function') {
+      callBack(fd);
+    } else {
+      this.ngxCropperService.save(url, fd).subscribe(
+        (data: any) => {
+          // return success
+          this.onUploadSuccess.emit(
+            JSON.stringify(data)
+          );
+          // hidden modal
+          this.onCancel();
+        },
+        (error: any) => {
+          // return error
+          this.onUploadError.emit(
+            JSON.stringify(error)
+          );
+          this.onCancel();
+        }
+      );
+    }
   }
 
   /**
@@ -151,6 +158,8 @@ export class NgxCropperComponent implements OnInit {
    */
   public onCancel() {
     this.isShow = false;
+    (document.getElementById('inputImage') as HTMLInputElement).value = null;
+    this.onCropperClosed.emit();
   }
 
   /**
@@ -184,18 +193,18 @@ export class NgxCropperComponent implements OnInit {
    * @memberof NgxCropperComponent
    */
   private initCropper(): void {
-    console.warn(this.config);
     const cropBox = document.getElementById('cropper-image') as HTMLImageElement;
 
-    this.cropper = new Cropper(cropBox, {
-      aspectRatio: this.viewConfig.aspectRatio,
-      autoCrop: true,
-      viewMode: 1,
-      dragMode: 'move',
-      guides: true,
-      movable: true,
-      cropBoxMovable: false,
-      cropBoxResizable: false
-    });
+    this.cropper = new Cropper(cropBox, this.cropperConfig);
   }
+
+  private applyDefaults(config: ICropperModel) {
+    for (const i in defaults) {
+      if (typeof config[i] === 'undefined') {
+        config[i] = defaults[i];
+      }
+    }
+    return config;
+  }
+
 }
