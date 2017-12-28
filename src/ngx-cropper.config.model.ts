@@ -10,4 +10,5 @@ export class Config {
   public applyBtnClass: string;
   public fdName: string;
   public closeBtnClass: string;
+  public acceptFiles: string;
 }

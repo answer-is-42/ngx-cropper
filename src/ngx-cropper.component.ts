@@ -16,7 +16,7 @@ import { Config } from './ngx-cropper.config.model';
       <a class="btn btn-primary" href="javascript: void(0)"
       [ngClass]="viewConfig.uploadBtnClass"
       onclick="document.getElementById('inputImage').click()">{{viewConfig.uploadBtnName}}</a>
-      <input id="inputImage" type="file" class="hide" hidden>
+      <input id="inputImage" type="file" class="hide" hidden [accept]="viewConfig.acceptFiles">
     </section>
     <div class="crop-background" *ngIf="isShow"></div>
     <section class="crop-container" *ngIf="isShow">
@@ -75,7 +75,8 @@ export class NgxCropperComponent implements OnInit {
       applyBtnName: this.config.applyBtnName || 'Apply',
       applyBtnClass: this.config.applyBtnClass || null,
       fdName: this.config.fdName || 'file',
-      closeBtnClass: this.config.closeBtnClass || ''
+      closeBtnClass: this.config.closeBtnClass || '',
+      acceptFiles: this.config.acceptFiles || 'image/*'
     };
 
     this.cropperConfig = this.applyDefaults(this.cropperConfig);

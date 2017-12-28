@@ -65,7 +65,8 @@ export class ExampleComponent {
       applyBtnName: 'Apply', // default Apply
       applyBtnClass: null, // default bootstrap styles, btn btn-primary
       fdName: 'file', // default 'file', this is  Content-Disposition: form-data; name="file"; filename="fire.jpg"
-      closeBtnClass: "btn-close"
+      closeBtnClass: "btn-close",
+      acceptFiles: "image/*" // accept file types
     }
     
     // default settings
